@@ -38,5 +38,30 @@ To ensure maximum availability, the application is strictly environment-driven v
 - **Code Versioning**: The structure adheres to `.gitignore` isolation, keeping `node_modules` and raw credentials offline.
 - **Cloud Hosting Platform**: The service can be dynamically pushed to PaaS platforms such as Railway, Render, or Heroku, with remote MongoDB Atlas and Cloudinary mapping, resulting in immediate global deployment availability.
 
-## 6. Conclusion
+## 6. Project Links & Screenshots
+
+**Live Deployment URL:** 
+> *(Paste your Render URL right here: e.g. https://auth-testing-api.onrender.com)*
+
+**GitHub Repository:** 
+> [https://github.com/Man-PrakashbhaiPatel/Authentication-Testing](https://github.com/Man-PrakashbhaiPatel/Authentication-Testing)
+
+### Postman Testing Screenshots
+*(Take the screenshots in Postman, then simply drag and drop the image files directly below this line to add them to your report)*
+
+1. **Register User Proof:**
+   *(Drop image here)*
+
+2. **Login User Proof (showing JWT Token):**
+   *(Drop image here)*
+
+3. **Upload Image Proof (showing Cloudinary URL):**
+   *(Drop image here)*
+
+4. **Mock Payment Proof:**
+   *(Drop image here)*
+
+---
+
+## 7. Conclusion
 The implementation successfully demonstrates a modern, full-stack understanding of secure HTTP transmission, database manipulation, third-party media pipelining, and system stability validation. The provided dashboard combined with an extensible MVC routing architecture creates a highly adaptive environment, well-positioned for future expansions.
