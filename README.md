@@ -74,5 +74,3 @@ A robust full-stack web application designed to demonstrate backend authenticati
 ### Payments
 - `POST /api/payment/process` - Process a generic simulated payment (Requires JWT Header `Authorization: Bearer <token>`)
 
-## License
-ISC
