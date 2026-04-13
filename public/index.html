@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth & Testing API Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="background-effects">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+    </div>
+
+    <main class="container">
+        <header>
+            <h1>API Test Portal</h1>
+            <p>Authentication, Upload & Mock Payment Frontend</p>
+        </header>
+
+        <div class="app-layout">
+            <!-- Left Column: Forms -->
+            <div class="forms-column">
+                
+                <!-- Authentication Form -->
+                <section class="glass-panel" id="auth-section">
+                    <h2>Authentication</h2>
+                    <div class="toggle-tabs">
+                        <button class="tab active" onclick="switchTab('login')">Login</button>
+                        <button class="tab" onclick="switchTab('register')">Register</button>
+                    </div>
+
+                    <form id="auth-form">
+                        <div class="input-group" id="name-group" style="display: none;">
+                            <label>Name</label>
+                            <input type="text" id="name" placeholder="John Doe">
+                        </div>
+                        <div class="input-group">
+                            <label>Email</label>
+                            <input type="email" id="email" placeholder="john@example.com" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Password</label>
+                            <input type="password" id="password" placeholder="••••••••" required>
+                        </div>
+                        <button type="submit" class="btn primary-btn" id="auth-action-btn">Sign In</button>
+                    </form>
+                </section>
+
+                <!-- Mock Payment Form -->
+                <section class="glass-panel disabled" id="payment-section">
+                    <h2>Mock Payment</h2>
+                    <p class="subtitle">Use token to access (End card in 4242 for success)</p>
+                    <form id="payment-form">
+                        <div class="input-group">
+                            <label>Amount ($)</label>
+                            <input type="number" id="amount" value="100" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Card Number</label>
+                            <input type="text" id="cardNumber" placeholder="xxxx xxxx xxxx 4242" required>
+                        </div>
+                        <div class="row">
+                            <div class="input-group">
+                                <label>Expiry</label>
+                                <input type="text" id="expiryDate" placeholder="12/26" required>
+                            </div>
+                            <div class="input-group">
+                                <label>CVV</label>
+                                <input type="text" id="cvv" placeholder="123" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn checkout-btn">Pay Now</button>
+                    </form>
+                </section>
+
+                <!-- Image Upload Form -->
+                <section class="glass-panel disabled" id="upload-section">
+                    <h2>Cloudinary Upload</h2>
+                    <form id="upload-form">
+                        <div class="file-drop-area">
+                            <span class="file-msg">Drag & Drop or Click</span>
+                            <input type="file" id="image" class="file-input" accept="image/*" required>
+                        </div>
+                        <button type="submit" class="btn upload-btn">Upload Image</button>
+                    </form>
+                    <div id="image-preview" style="display:none; margin-top:15px; border-radius: 10px; overflow: hidden;">
+                        <img id="preview-img" src="" style="width: 100%; display: block;" alt="Preview">
+                    </div>
+                </section>
+
+            </div>
+
+            <!-- Right Column: Status & Logs -->
+            <div class="logs-column">
+                <section class="glass-panel status-panel">
+                    <h3>Current State</h3>
+                    <div class="state-indicator">
+                        <div class="status-dot warning" id="auth-dot"></div>
+                        <span id="auth-status-text">Not Authenticated</span>
+                    </div>
+                    
+                    <div class="token-container">
+                        <label>JWT Token</label>
+                        <textarea id="jwt-token" readonly placeholder="Waiting for login..."></textarea>
+                    </div>
+                </section>
+
+                <section class="glass-panel console-panel">
+                    <h3>Response Logs</h3>
+                    <div class="console-window" id="console-logs">
+                        <div class="log-entry system">System initialized. Waiting for actions...</div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentMode = 'login';
+        let jwtToken = '';
+
+        // UI Tabs
+        function switchTab(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.tab:nth-child(${mode === 'login' ? 1 : 2})`).classList.add('active');
+            
+            document.getElementById('name-group').style.display = mode === 'register' ? 'block' : 'none';
+            document.getElementById('auth-action-btn').textContent = mode === 'register' ? 'Create Account' : 'Sign In';
+        }
+
+        function logToConsole(title, data, type = 'info') {
+            const logs = document.getElementById('console-logs');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            const time = new Date().toLocaleTimeString();
+            
+            entry.innerHTML = `<span class="time">[${time}]</span> <strong>${title}</strong>
+            <pre>${JSON.stringify(data, null, 2)}</pre>`;
+            
+            logs.appendChild(entry);
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function setAuthenticated(token) {
+            jwtToken = token;
+            document.getElementById('jwt-token').value = token;
+            document.getElementById('auth-status-text').textContent = 'Authenticated via JWT';
+            document.getElementById('auth-dot').className = 'status-dot success';
+            
+            // Enable sensitive forms
+            document.getElementById('payment-section').classList.remove('disabled');
+            document.getElementById('upload-section').classList.remove('disabled');
+        }
+
+        // Auth Submit
+        document.getElementById('auth-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const name = document.getElementById('name').value;
+
+            const endpoint = currentMode === 'login' ? '/api/auth/login' : '/api/auth/register';
+            const body = currentMode === 'login' ? { email, password } : { name, email, password };
+
+            try {
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    logToConsole('Auth Success', data, 'success');
+                    setAuthenticated(data.token);
+                } else {
+                    logToConsole('Auth Failed', data, 'error');
+                }
+            } catch (err) {
+                logToConsole('Network Error', err.message, 'error');
+            }
+        });
+
+        // Payment Submit
+        document.getElementById('payment-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!jwtToken) return alert('Please login first');
+
+            const body = {
+                amount: document.getElementById('amount').value,
+                cardNumber: document.getElementById('cardNumber').value,
+                expiryDate: document.getElementById('expiryDate').value,
+                cvv: document.getElementById('cvv').value,
+            };
+
+            try {
+                const res = await fetch('/api/payment/mock', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${jwtToken}`
+                    },
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+                
+                logToConsole(res.ok ? 'Payment Success' : 'Payment Failed', data, res.ok ? 'success' : 'error');
+            } catch (err) {
+                logToConsole('Network Error', err.message, 'error');
+            }
+        });
+
+        // Upload Submit
+        document.getElementById('upload-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!jwtToken) return alert('Please login first');
+
+            const fileInput = document.getElementById('image');
+            if (!fileInput.files[0]) return alert('Select an image');
+
+            const formData = new FormData();
+            formData.append('image', fileInput.files[0]);
+
+            try {
+                const res = await fetch('/api/upload/image', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${jwtToken}` },
+                    body: formData
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    logToConsole('Cloudinary Upload', data, 'success');
+                    document.getElementById('image-preview').style.display = 'block';
+                    document.getElementById('preview-img').src = data.url;
+                } else {
+                    logToConsole('Upload Failed', data, 'error');
+                }
+            } catch (err) {
+                logToConsole('Network Error', err.message, 'error');
+            }
+        });
+
+        // File input styling 
+        const fileInput = document.querySelector('.file-input');
+        fileInput.addEventListener('change', () => {
+            const fileName = fileInput.files[0] ? fileInput.files[0].name : "Drag & Drop or Click";
+            document.querySelector('.file-msg').innerText = fileName;
+        });
+
+    </script>
+</body>
+</html>
